@@ -76,6 +76,7 @@ class Trainer:
         # perform a training step
         # calculate the average loss for the epoch and return it
         #TODO
+
         return
     
     def val_test(self):

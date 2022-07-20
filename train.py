@@ -10,11 +10,13 @@ from sklearn.model_selection import train_test_split
 
 # load the data from the csv file and perform a train-test-split
 # this can be accomplished using the already imported pandas and sklearn.model_selection modules
-# TODO
+data = pd.read_csv("data.csv")
+X_train, X_test, y_train, y_test = train_test_split(data['filename'], data['crack'], data['inactive'], test_size=0.2, random_state=42)
 
 # set up data loading for the training and validation set each using t.utils.data.DataLoader and ChallengeDataset objects
 # TODO
-
+data_class = ChallengeDataset(data=X_train, mode="train")
+data_class.__getitem__(index=)
 # create an instance of our ResNet model
 # TODO
 

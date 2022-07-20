@@ -17,7 +17,6 @@ class ChallengeDataset(Dataset):
     def __init__(self, data, mode):
         self.data = data
         self.mode = mode  # validation or train
-        # self.image_list = [os.path.join(path, name) for path, subdirs, files in os.walk() for name in files]
     pass
 
     def  __len__(self):
@@ -26,7 +25,7 @@ class ChallengeDataset(Dataset):
         elif self.mode == "train":
             return len(self.val_data)
 
-    def transform(self, image, path):
+    def _transform(self, image, path):
         # Perform the transformation over the image data
         transformed_image = image
         transformer = tv.transforms.Compose([
