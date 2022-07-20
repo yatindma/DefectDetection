@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class ResNet(nn.module):
+class ResNet(nn.Module):
     def __init__(self, no_in_channels =3 , no_out_channels=2):
-        super(ResNet, self).__init()
+        super().__init__()
         self.encoder = ResEncoder(in_channels=no_in_channels, out_channels=64)
         self.res1 = ResBlock(in_channels=1, out_channels=2, stride= 2)
         self.res2 = ResBlock(in_channels=1, out_channels=2, stride=2)
@@ -13,7 +13,7 @@ class ResNet(nn.module):
         self.res4 = ResBlock(in_channels=1, out_channels=2, stride=2)
         self.res5 = ResBlock(in_channels=1, out_channels=2, stride=2)
         self.avgpool = nn.AdaptiveAvgPool2d((1, 1))
-        self.flatten = nn.flatten()
+        self.flatten = nn.Flatten()
         self.fc = nn.Linear(512, no_out_channels)
         pass
 
@@ -31,13 +31,13 @@ class ResNet(nn.module):
         return fully_connected
 
 
-class ResBlock(nn.module):
+class ResBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride):
-        super(ResBlock, self).__init__()
+        super().__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
         self.stride = stride
-        self.n_n = nn.sequential(
+        self.n_n = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),
@@ -45,7 +45,7 @@ class ResBlock(nn.module):
             nn.BatchNorm2d(out_channels),
             nn.ReLU()
         )
-        self.one_cross_one_conv = nn.conv2d(in_channels, out_channels, kernel_size=1, stride=1)
+        self.one_cross_one_conv = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1)
 
     def forward(self, input_tensor):
         res_out = self.res(input_tensor)
@@ -55,11 +55,11 @@ class ResBlock(nn.module):
         return output_tensor
 
 
-class ResEncoder(nn.module):
+class ResEncoder(nn.Module):
     # Takes the image tensor first and encode it
     def __init__(self, in_channels, out_channels):
-        super(ResEncoder, self).__init__()
-        self.encoder = nn.sequential(
+        super().__init__()
+        self.encoder = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=2, padding=4),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(),

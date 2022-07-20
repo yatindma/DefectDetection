@@ -19,13 +19,14 @@ class Trainer:
         self._train_dl = train_dl
         self._val_test_dl = val_test_dl
         self._cuda = cuda
-
         self._early_stopping_patience = early_stopping_patience
 
         if cuda:
             self._model = model.cuda()
             self._crit = crit.cuda()
-            
+
+        self.device = t.device('cuda:0' if t.cuda.is_available() else 'cpu')
+
     def save_checkpoint(self, epoch):
         t.save({'state_dict': self._model.state_dict()}, 'checkpoints/checkpoint_{:03d}.ckp'.format(epoch))
     
@@ -69,8 +70,29 @@ class Trainer:
         # return the loss and the predictions
         #TODO
         return
+
     def train_epoch(self):
         # set training mode
+        self._model.train()
+        # bring everything to device
+        for image, label in self.train_dl:
+            image = image.to(self.device)
+            labels = label.to(self.device)
+            self._optim.zero_grad()
+
+            with t.set_grad_enabled(True):
+                model_out = self._model(image)
+                label = labels.float()
+                # Probability of 0.5 corresponds to a logit of 0. #STACKOVERFLOW
+                loss = criterion(model_out, label) # loss function
+
+                # Start backward propagation from the loss function
+                loss.backward()
+
+                #
+
+
+
         # iterate through the training set
         # transfer the batch to "cuda()" -> the gpu if a gpu is given
         # perform a training step
@@ -98,6 +120,11 @@ class Trainer:
         #TODO
         
         while True:
+            if epochs <= 0:
+                break
+            epochs -= 1
+            train_loss, train_acc, train_F1 = self.train_epoch()
+
             pass
             # stop by epoch number
             # train for a epoch and then calculate the loss and metrics on the validation set

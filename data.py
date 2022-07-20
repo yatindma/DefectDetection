@@ -1,4 +1,4 @@
-import torchvision.datasets
+import torchvision.datasets as datasets
 from torch.utils.data import Dataset
 import torch
 from pathlib import Path
@@ -17,24 +17,31 @@ class ChallengeDataset(Dataset):
     def __init__(self, data, mode):
         self.data = data
         self.mode = mode  # validation or train
+        if self.mode == "train":
+            self.transformer = tv.transforms.Compose([
+                # tv.transforms.ToPILImage(),
+                tv.transforms.ToTensor(),
+                tv.transforms.Normalize(train_mean, train_std),
+                tv.transforms.RandomVerticalFlip(p=0.2),
+                tv.transforms.RandomHorizontalFlip(p=0.1)
+                ])
+        else:
+            self.transformer = tv.transforms.Compose([
+                # tv.transforms.ToPILImage(),
+                tv.transforms.ToTensor(),
+                tv.transforms.Normalize(train_mean, train_std),
+                ])
+
     pass
 
-    def  __len__(self):
-        if self.mode == "val":
-            return len(self.train_data)
-        elif self.mode == "train":
-            return len(self.val_data)
+    def __len__(self):
+        return len(self.data)
 
     def _transform(self, image, path):
         # Perform the transformation over the image data
-        transformed_image = image
-        transformer = tv.transforms.Compose([
-            tv.transforms.ToPILImage(),
-            tv.transforms.ToTensor(),
-            tv.transforms.Normalize(train_mean, train_std),
-            tv.transforms.RandomVerticalFlip(p=0.2)
-            ])
-        return Dataset(cfg_path=path, valid_split_ratio=0.2, transform=transformer, mode="train" if self.mode == "train" else "val")
+        # transformed_image = image
+        return self.transformer(image)
+        # return Dataset(cfg_path=path, valid_split_ratio=0.2, transform=transformer, mode="train" if self.mode == "train" else "val")
 
     def __getitem__(self, index):
         # This function return the transformed image
@@ -45,9 +52,10 @@ class ChallengeDataset(Dataset):
         label = np.zeros(2, dtype=int)
         label[0] = int(crack)
         label[1] = int(inactive)
-        image = imread(os.path.join(self.input_data_path, img_path))
+        image = imread(os.path.join(img_path))
         image = gray2rgb(image)
-        image = self.transform(image, img_path)
+        image = self._transform(image, img_path)
+        # image = transformer(image)
         label = torch.from_numpy(label)
         return image, label
 
