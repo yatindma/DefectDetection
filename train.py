@@ -11,16 +11,16 @@ device = t.device('cuda:0' if t.cuda.is_available() else 'cpu')
 # load the data from the csv file and perform a train-test-split
 # this can be accomplished using the already imported pandas and sklearn.model_selection modules
 # TODO
-data = pd.read_csv("data.csv")
+data = pd.read_csv("data.csv", sep=";")
 
 # set up data loading for the training and validation set each using t.utils.data.DataLoader and ChallengeDataset objects
 # TODO
-train, test = train_test_split(data, test_size=0.2, random_state=42)
-train, val = train_test_split(train, test_size=0.1, random_state=42)
+train, val = train_test_split(data, test_size=0.2, random_state=42)
+# train, val = train_test_split(train, test_size=0.1, random_state=42)
 
-dataloader_train = t.utils.data.DataLoader(ChallengeDataset(val, 'train'), batch_size=1, shuffle=False, num_workers=2)
+dataloader_train = t.utils.data.DataLoader(ChallengeDataset(train, 'train'), batch_size=1, shuffle=False, num_workers=2)
 dataloader_val = t.utils.data.DataLoader(ChallengeDataset(val, 'val'), batch_size=1, shuffle=False, num_workers=2)
-dataloader_test = t.utils.data.DataLoader(ChallengeDataset(val, 'val'), batch_size=1, shuffle=False, num_workers=2)
+# dataloader_test = t.utils.data.DataLoader(ChallengeDataset(val, 'val'), batch_size=1, shuffle=False, num_workers=2)
 
 # create an instance of our ResNet model
 # TODO
@@ -33,15 +33,26 @@ model = model.ResNet().to(device)
 criterion = t.nn.CrossEntropyLoss()
 learning_rate = 0.001
 optimizer = t.optim.Adam(model.parameters(), lr=learning_rate)
-# Need to stop early here using the loss
+# Need to stop early here using the loss  - this functionality is already there in trainer.py
 
 
 # go, go, go... call fit on trainer
+# define the number of epochs
+epochs = 10
+trainer = Trainer(model=model,
+                  crit=criterion,  # Loss function
+                  optim=optimizer,  # Optimizer
+                  train_dl=dataloader_train,  # Training data set
+                  val_test_dl=dataloader_val,  # Validation (or test) data set
+                  cuda=False,  # Whether to use the GPU
+                  early_stopping_patience=-1)
 res = 0#TODO
+trainer.fit(epochs=epochs)
+trainer.val_test()
 
-# plot the results
-plt.plot(np.arange(len(res[0])), res[0], label='train loss')
-plt.plot(np.arange(len(res[1])), res[1], label='val loss')
-plt.yscale('log')
-plt.legend()
-plt.savefig('losses.png')
+# # plot the results
+# plt.plot(np.arange(len(res[0])), res[0], label='train loss')
+# plt.plot(np.arange(len(res[1])), res[1], label='val loss')
+# plt.yscale('log')
+# plt.legend()
+# plt.savefig('losses.png')
