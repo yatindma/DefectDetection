@@ -28,10 +28,10 @@ class Trainer:
         self.device = t.device('cuda:0' if t.cuda.is_available() else 'cpu')
 
     def save_checkpoint(self, epoch):
-        t.save({'state_dict': self._model.state_dict()}, 'checkpoints/checkpoint_{:03d}.ckp'.format(epoch))
+        t.save({'state_dict': self._model.state_dict()}, '/checkpoints/checkpoint_{:03d}.ckp'.format(epoch-1))
 
     def restore_checkpoint(self, epoch_n):
-        ckp = t.load('checkpoints/checkpoint_{:03d}.ckp'.format(epoch_n), 'cuda' if self._cuda else None)
+        ckp = t.load('/checkpoints/checkpoint_{:03d}.ckp'.format(epoch_n), 'cuda' if self._cuda else None)
         self._model.load_state_dict(ckp['state_dict'])
 
     def save_onnx(self, fn):
@@ -59,7 +59,9 @@ class Trainer:
             # -propagate through the network
             model_out = self._model(x)
             # -calculate the loss
-            loss = self.crit(model_out, y)  # loss function
+            y = y.type(t.float32)
+            model_out = model_out.type(t.float32)
+            loss = self._crit(model_out, y)  # loss function
             # -compute gradient by backward propagation
             loss.backward()
             # -update weights
@@ -68,11 +70,13 @@ class Trainer:
             return loss
 
     def val_test_step(self, x, y):
-
+        print(type(y))
         # predict
         # propagate through the network and calculate the loss and predictions
         model_output = self._model(x)
-        val_test_loss = self._crit(model_output, y)
+        y = y.type(t.float32)
+        # model_out =
+        val_test_loss = self._crit(model_output.type(t.float32), y)
         # return the loss and the predictions
         return val_test_loss, model_output
 
@@ -87,7 +91,7 @@ class Trainer:
         loss = []
         f1_scores = []
         # transfer the batch to "cuda()" -> the gpu if a gpu is given
-        for images, label in self._train_dl:
+        for images, label in tqdm(self._train_dl):
             index += 1
             images = images.to(self.device)
             labels = label.to(self.device)
@@ -116,11 +120,11 @@ class Trainer:
                 val_test_loss, model_output = self.val_test_step(images, labels)
                 losses.append(val_test_loss)
 
-                f1_scores.append(f1_score(int(model_output > 0.5), labels))
+                # f1_scores.append(f1_score(int([t.numpy() for t in model_output] > 0.5), labels))
         # save the predictions and the labels for each batch
-        print(f"F1 score is: {t.mean(t.tensor(f1_scores, dtype=t.float32))}")
+        # print(f"F1 score is: {t.mean(t.tensor(f1_scores, dtype=t.float32))}")
         # calculate the average loss and average metrics of your choice. You might want to calculate these metrics in designated functions
-        average_loss = t.mean(t.tensor(losses))
+        average_loss = t.mean(t.tensor(losses,dtype=t.float32))
         # return the loss and print the calculated metrics
         return average_loss
 
@@ -130,11 +134,10 @@ class Trainer:
         loss_arr = []
         loss_train= []
         loss_val = []
-        while True:
+        for epoch in range(1, epochs+1):
             # stop by epoch number
-            if epochs <= 0:
-                break
-            epochs -= 1
+            print("Epoch Started -->  ", epoch)
+
             # train for a epoch and then calculate the loss and metrics on the validation set
             train_loss = self.train_epoch()
             val_loss = self.val_test()
@@ -143,14 +146,13 @@ class Trainer:
             loss_train.append(train_loss)
             loss_val.append(val_loss)
             # use the save_checkpoint function to save the model (can be restricted to epochs with improvement)
-            self.save_checkpoint(epochs)
-
+            self.save_checkpoint(epoch)
             loss_arr.append(train_loss)
 
 
             # check whether early stopping should be performed using the early stopping criterion and stop if so
             # TODO
-
+            print("epoch")
             # return the losses for both training and validation
         return loss_train, loss_val
 

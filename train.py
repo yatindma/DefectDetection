@@ -11,7 +11,7 @@ device = t.device('cuda:0' if t.cuda.is_available() else 'cpu')
 # load the data from the csv file and perform a train-test-split
 # this can be accomplished using the already imported pandas and sklearn.model_selection modules
 # TODO
-data = pd.read_csv("data.csv", sep=";")
+data = pd.read_csv("data.csv", sep=";").head(4)
 
 # set up data loading for the training and validation set each using t.utils.data.DataLoader and ChallengeDataset objects
 # TODO
@@ -38,7 +38,7 @@ optimizer = t.optim.Adam(model.parameters(), lr=learning_rate)
 
 # go, go, go... call fit on trainer
 # define the number of epochs
-epochs = 10
+epochs = 15
 trainer = Trainer(model=model,
                   crit=criterion,  # Loss function
                   optim=optimizer,  # Optimizer
