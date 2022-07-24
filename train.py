@@ -13,6 +13,7 @@ device = t.device('cuda:0' if t.cuda.is_available() else 'cpu')
 # TODO
 data = pd.read_csv("data.csv", sep=";")
 
+
 # set up data loading for the training and validation set each using t.utils.data.DataLoader and ChallengeDataset objects
 # TODO
 train, val = train_test_split(data, test_size=0.2, random_state=42)
