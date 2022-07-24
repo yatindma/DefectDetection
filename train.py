@@ -11,7 +11,7 @@ device = t.device('cuda:0' if t.cuda.is_available() else 'cpu')
 # load the data from the csv file and perform a train-test-split
 # this can be accomplished using the already imported pandas and sklearn.model_selection modules
 # TODO
-data = pd.read_csv("data.csv", sep=";").head(4)
+data = pd.read_csv("data.csv", sep=";")
 
 # set up data loading for the training and validation set each using t.utils.data.DataLoader and ChallengeDataset objects
 # TODO
@@ -48,9 +48,11 @@ trainer = Trainer(model=model,
                   early_stopping_patience=-1)
 res = 0#TODO
 trainer.fit(epochs=epochs)
-trainer.val_test()
+loss = trainer.val_test()
+plt.plot(loss)
+plt.show()
 
-# # plot the results
+# plot the results
 # plt.plot(np.arange(len(res[0])), res[0], label='train loss')
 # plt.plot(np.arange(len(res[1])), res[1], label='val loss')
 # plt.yscale('log')
