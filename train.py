@@ -16,11 +16,11 @@ data = pd.read_csv("data.csv", sep=";")
 
 # set up data loading for the training and validation set each using t.utils.data.DataLoader and ChallengeDataset objects
 # TODO
-train, val = train_test_split(data, test_size=0.2, random_state=42)
+train, val = train_test_split(data, test_size=0.4, random_state=42)
 # train, val = train_test_split(train, test_size=0.1, random_state=42)
 
-dataloader_train = t.utils.data.DataLoader(ChallengeDataset(train, 'train'), batch_size=1, shuffle=False, num_workers=2)
-dataloader_val = t.utils.data.DataLoader(ChallengeDataset(val, 'val'), batch_size=1, shuffle=False, num_workers=2)
+dataloader_train = t.utils.data.DataLoader(ChallengeDataset(train, 'train'), batch_size=2, shuffle=True, num_workers=0)
+dataloader_val = t.utils.data.DataLoader(ChallengeDataset(val, 'val'), batch_size=2, shuffle=True, num_workers=0)
 # dataloader_test = t.utils.data.DataLoader(ChallengeDataset(val, 'val'), batch_size=1, shuffle=False, num_workers=2)
 
 # create an instance of our ResNet model
@@ -39,7 +39,7 @@ optimizer = t.optim.Adam(model.parameters(), lr=learning_rate)
 
 # go, go, go... call fit on trainer
 # define the number of epochs
-epochs = 15
+epochs = 200
 trainer = Trainer(model=model,
                   crit=criterion,  # Loss function
                   optim=optimizer,  # Optimizer
@@ -47,15 +47,11 @@ trainer = Trainer(model=model,
                   val_test_dl=dataloader_val,  # Validation (or test) data set
                   cuda=False,  # Whether to use the GPU
                   early_stopping_patience=-1)
-res = 0#TODO
-trainer.fit(epochs=epochs)
-loss = trainer.val_test()
-plt.plot(loss)
-plt.show()
+res = trainer.fit(epochs=epochs)
 
 # plot the results
-# plt.plot(np.arange(len(res[0])), res[0], label='train loss')
-# plt.plot(np.arange(len(res[1])), res[1], label='val loss')
-# plt.yscale('log')
-# plt.legend()
-# plt.savefig('losses.png')
+plt.plot(np.arange(len(res[0])), res[0], label='train loss')
+plt.plot(np.arange(len(res[1])), res[1], label='val loss')
+plt.yscale('log')
+plt.legend()
+plt.savefig('losses.png')

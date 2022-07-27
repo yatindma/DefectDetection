@@ -118,7 +118,8 @@ class Trainer:
                 # perform a validation step
                 val_test_loss, model_output = self.val_test_step(images, labels)
                 losses.append(val_test_loss)
-                f1_scores.append(f1_score(t.tensor([[int(elem) for elem in (model_output > 0.5)[0]]]).numpy(), labels.numpy(), average='samples', labels= np.unique(labels)))
+                f1_scores.append(f1_score((model_output > 0.5).numpy().astype(int), labels.numpy(),
+                                          average='samples'))
         # save the predictions and the labels for each batch
         print(f"F1 score is: {t.mean(t.tensor(f1_scores, dtype=t.float32))}")
         # calculate the average loss and average metrics of your choice. You might want to calculate these metrics in designated functions
